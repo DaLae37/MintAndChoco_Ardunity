@@ -4,22 +4,31 @@ using UnityEngine;
 using Ardunity;
 public class Player : MonoBehaviour
 {
+    public ArdunityApp ardunityApp;
     public DigitalInput digitalInput;
+    public MPUSeries mpu;
 
     private Rigidbody rb;
-
+    
     public GameObject bulletPrefab;
     public GameObject bullets;
+    public GameObject bomb;
 
     private Transform beforeRotation;
     public Transform playerCamera;
     public Transform bulletPos;
-    
+
+    private bool isStarted = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        ardunityApp.OnConnected.AddListener(StartedGame);
+        ardunityApp.OnDisconnected.AddListener(StopGame);
+        mpu.OnStartCalibration.AddListener(OnStartCalibration);
+        mpu.OnCalibrated.AddListener(OnCalibrated);
         digitalInput.OnValueChanged.AddListener(OnDigitalInputChanged);
+
         rb = GetComponent<Rigidbody>();
         beforeRotation = GetComponent<Transform>();
     }
@@ -27,22 +36,23 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.rotation = playerCamera.rotation;
-        if (beforeRotation.rotation.y != playerCamera.rotation.y)
+        if (isStarted)
         {
-            StopFowrad();
+            Quaternion rot = mpu.rotation;
+            transform.rotation = playerCamera.rotation;
+            if (rot.x < 0.2 && rot.x > -0.2)
+            {
+                StopFowrad();
+            }
+            else if((rot.x < -0.4) || (rot.x > 0.4))
+            {
+                MoveFoward((rot.x < -0.4), (rot.x > 0.4));
+            }
+            if (Input.GetKey(KeyCode.Q))
+            {
+            }
+            beforeRotation.rotation = transform.rotation;
         }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            ShotBullet();
-        }
-
-        if (Input.GetKey(KeyCode.V))
-        {
-            MoveFoward(false, false);
-        }
-        beforeRotation.rotation = transform.rotation;
     }
 
     public void ShotBullet()
@@ -53,11 +63,11 @@ public class Player : MonoBehaviour
 
     public void MoveFoward(bool fastMoved, bool slowMoved)
     {
-        int speed = 10;
+        int speed = 15;
         if (fastMoved)
             speed = 20;
         if (slowMoved)
-            speed = 5;
+            speed = 10;
 
         rb.AddForce(transform.forward * speed);
     }
@@ -69,6 +79,33 @@ public class Player : MonoBehaviour
 
     public void OnDigitalInputChanged(bool value)
     {
-        ShotBullet();
+        if (value)
+        {
+            ShotBullet();
+        }
+    }
+
+    public void MPUCalibration()
+    {
+        mpu.Calibration();
+    }
+    void OnStartCalibration()
+    {
+
+    }
+
+    void OnCalibrated()
+    {
+
+    }
+
+    void StartedGame()
+    {
+        isStarted = true;
+    }
+
+    void StopGame()
+    {
+        isStarted = false;
     }
 }
