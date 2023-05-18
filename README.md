@@ -6,11 +6,13 @@
 
 [아두니티](http://ardunityproject.blogspot.com/)
 
+# 개발 환경
+Unity ver. 2018.4.2f1 (.NET Framework 문제로 버전 변경 권장하지 않음)
+
 # 기타
 
 [유튜브](https://youtu.be/Vj_ENoRUlRM)
 
 [보고서]()
 
-# Origin Version
-https://github.com/dalae37/mintandchoco
+[원본 프로젝트](https://github.com/dalae37/mintandchoco)
